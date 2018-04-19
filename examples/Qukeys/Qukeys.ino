@@ -1,8 +1,8 @@
 // -*- mode: c++ -*-
 
-#include <Kaleidoscope.h>
-#include <Kaleidoscope-Qukeys.h>
-#include <Kaleidoscope-Macros.h>
+#include <Kaleidoglyph.h>
+#include <Kaleidoglyph-Qukeys.h>
+#include <Kaleidoglyph-Macros.h>
 
 enum { MACRO_TOGGLE_QUKEYS };
 
@@ -61,24 +61,24 @@ const macro_t *macroAction(uint8_t macro_index, uint8_t key_state) {
 
 void setup() {
   // Use Qukeys
-  Kaleidoscope.use(&Qukeys);
+  Kaleidoglyph.use(&Qukeys);
 
   QUKEYS(
-    kaleidoscope::Qukey(0, 2, 1, Key_LeftGui),      // A/cmd
-    kaleidoscope::Qukey(0, 2, 2, Key_LeftAlt),      // S/alt
-    kaleidoscope::Qukey(0, 2, 3, Key_LeftControl),  // D/ctrl
-    kaleidoscope::Qukey(0, 2, 4, Key_LeftShift),    // F/shift
-    kaleidoscope::Qukey(0, 3, 6, ShiftToLayer(1))   // Q/layer-shift (on `fn`)
+    kaleidoglyph::Qukey(0, 2, 1, Key_LeftGui),      // A/cmd
+    kaleidoglyph::Qukey(0, 2, 2, Key_LeftAlt),      // S/alt
+    kaleidoglyph::Qukey(0, 2, 3, Key_LeftControl),  // D/ctrl
+    kaleidoglyph::Qukey(0, 2, 4, Key_LeftShift),    // F/shift
+    kaleidoglyph::Qukey(0, 3, 6, ShiftToLayer(1))   // Q/layer-shift (on `fn`)
   )
   Qukeys.setTimeout(200);
   Qukeys.setReleaseDelay(20);
 
   // To toggle Qukeys off and on, we use a macro
-  Kaleidoscope.use(&Macros);
+  Kaleidoglyph.use(&Macros);
 
-  Kaleidoscope.setup();
+  Kaleidoglyph.setup();
 }
 
 void loop() {
-  Kaleidoscope.loop();
+  Kaleidoglyph.loop();
 }

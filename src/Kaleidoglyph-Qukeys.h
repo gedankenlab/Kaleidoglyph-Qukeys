@@ -1,6 +1,6 @@
 /* -*- mode: c++ -*-
- * Kaleidoscope-Qukeys -- Assign two keycodes to a single key
- * Copyright (C) 2017  Michael Richters
+ * Kaleidoglyph-Qukeys -- Assign two keycodes to a single key
+ * Copyright (C) 2017-2018  Michael Richters
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,4 +18,4 @@
 
 #pragma once
 
-#include <Kaleidoscope/Qukeys.h>
+#include "qukeys/Qukeys.h"

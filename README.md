@@ -1,9 +1,9 @@
-# Kaleidoscope-Qukeys
+# Kaleidoglyph-Qukeys
 
 ![status][st:experimental] [![Build Status][travis:image]][travis:status]
 
- [travis:image]: https://travis-ci.org/gedankenlab/Kaleidoscope-Qukeys.svg?branch=master
- [travis:status]: https://travis-ci.org/gedankenlab/Kaleidoscope-Qukeys
+ [travis:image]: https://travis-ci.org/gedankenlab/Kaleidoglyph-Qukeys.svg?branch=master
+ [travis:status]: https://travis-ci.org/gedankenlab/Kaleidoglyph-Qukeys
 
  [st:stable]: https://img.shields.io/badge/stable-✔-black.svg?style=flat&colorA=44cc11&colorB=494e52
  [st:broken]: https://img.shields.io/badge/broken-X-black.svg?style=flat&colorA=e05d44&colorB=494e52
@@ -11,7 +11,7 @@
 
 ## Concept
 
-This Kaleidoscope plugin allows you to overload keys on your keyboard so that they produce
+This Kaleidoglyph plugin allows you to overload keys on your keyboard so that they produce
 one keycode (i.e. symbol) when tapped, and a different keycode -- most likely a modifier
 (e.g. `shift` or `alt`) -- when held.
 
@@ -20,23 +20,23 @@ one keycode (i.e. symbol) when tapped, and a different keycode -- most likely a 
 
 - Clone the module -- In your sketch directory (e.g. `Model01-Firmware/`:
 ```
-git submodule add https://github.com/gedankenlab/Kaleidoscope-Qukeys.git Kaleidoscope-Qukeys
+git submodule add https://github.com/gedankenlab/Kaleidoglyph-Qukeys.git Kaleidoglyph-Qukeys
 ```
 - Include the header file:
 ```
-#include <Kaleidoscope-Qukeys.h>
+#include <Kaleidoglyph-Qukeys.h>
 ```
 - Use the plugin in the `setup()` function:
 ```
-Kaleidoscope.use(&Qukeys);
+Kaleidoglyph.use(&Qukeys);
 ```
 - Define some `Qukeys`:
 ```
 QUKEYS(
-  kaleidoscope::Qukey(0, 2, 1, Key_LeftGui),      // A/cmd
-  kaleidoscope::Qukey(0, 2, 2, Key_LeftAlt),      // S/alt
-  kaleidoscope::Qukey(0, 2, 3, Key_LeftControl),  // D/ctrl
-  kaleidoscope::Qukey(0, 2, 4, Key_LeftShift)     // F/shift
+  kaleidoglyph::Qukey(0, 2, 1, Key_LeftGui),      // A/cmd
+  kaleidoglyph::Qukey(0, 2, 2, Key_LeftAlt),      // S/alt
+  kaleidoglyph::Qukey(0, 2, 3, Key_LeftControl),  // D/ctrl
+  kaleidoglyph::Qukey(0, 2, 4, Key_LeftShift)     // F/shift
 )
 ```
 
@@ -55,14 +55,14 @@ likely to generate errors and out-of-order events.
 - activate/deactivate `Qukeys`
 
 - see the
-  [example](https://github.com/gedankenlab/Kaleidoscope-Qukeys/blob/master/examples/Qukeys/Qukeys.ino)
-  for a way to turn `Qukeys` on and off, using Kaleidoscope-Macros
+  [example](https://github.com/gedankenlab/Kaleidoglyph-Qukeys/blob/master/examples/Qukeys/Qukeys.ino)
+  for a way to turn `Qukeys` on and off, using Kaleidoglyph-Macros
 
 ### DualUse key definitions
 
-In addition to normal `Qukeys` described above, Kaleidoscope-Qukeys also treats
-DualUse keys in the keymap as `Qukeys`. See [the Kaleidoscope-DualUse
-documentation](https://github.com/keyboardio/Kaleidoscope-DualUse#keymap-markup)
+In addition to normal `Qukeys` described above, Kaleidoglyph-Qukeys also treats
+DualUse keys in the keymap as `Qukeys`. See [the Kaleidoglyph-DualUse
+documentation](https://github.com/keyboardio/Kaleidoglyph-DualUse#keymap-markup)
 for a thorough description of how to define DualUse keys. This makes `Qukeys` a
 drop-in replacement for the `DualUse` plugin, without the need to edit the
 keymap.
