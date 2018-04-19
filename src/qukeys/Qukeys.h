@@ -2,17 +2,17 @@
 
 #include <Arduino.h>
 
-#include KALEIDOSCOPE_HARDWARE_H
-#include KALEIDOSCOPE_KEYADDR_H
-#include <kaleidoscope/Key.h>
-#include <kaleidoscope/Plugin.h>
-#include <kaleidoscope/Keymap.h>
-#include <kaleidoscope/Controller.h>
-#include <kaleidoscope/cKey.h>
+#include KALEIDOGLYPH_HARDWARE_H
+#include KALEIDOGLYPH_KEYADDR_H
+#include <kaleidoglyph/Key.h>
+#include <kaleidoglyph/Plugin.h>
+#include <kaleidoglyph/Keymap.h>
+#include <kaleidoglyph/Controller.h>
+#include <kaleidoglyph/cKey.h>
 
 #include "qukeys/QukeysKey.h"
 
-namespace kaleidoscope {
+namespace kaleidoglyph {
 namespace qukeys {
 
 // Constants (can be overridden in the sketch)
@@ -46,7 +46,7 @@ struct QueueEntry {
 };
 
 
-class Plugin : public kaleidoscope::Plugin {
+class Plugin : public kaleidoglyph::Plugin {
 
  public:
   Plugin(const Qukey* const qukeys, const byte qukey_count, Keymap& keymap, Controller& controller)
@@ -63,7 +63,7 @@ class Plugin : public kaleidoscope::Plugin {
   }
 
   bool keyswitchEventHook(KeyswitchEvent& event,
-                          kaleidoscope::Plugin*& caller) override;
+                          kaleidoglyph::Plugin*& caller) override;
 
   void preScanHook(uint16_t current_time) override;
 
@@ -110,4 +110,4 @@ class Plugin : public kaleidoscope::Plugin {
 };
 
 } // namespace qukeys {
-} // namespace kaleidoscope {
+} // namespace kaleidoglyph {

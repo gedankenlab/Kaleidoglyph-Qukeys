@@ -5,22 +5,22 @@
 
 #include <Arduino.h>
 
-#include KALEIDOSCOPE_HARDWARE_H
-#include KALEIDOSCOPE_KEYADDR_H
-#include <kaleidoscope/Key.h>
-#include <kaleidoscope/Plugin.h>
-#include <kaleidoscope/KeyswitchState.h>
-#include <kaleidoscope/KeyArray.h>
-#include <kaleidoscope/KeyswitchEvent.h>
+#include KALEIDOGLYPH_HARDWARE_H
+#include KALEIDOGLYPH_KEYADDR_H
+#include <kaleidoglyph/Key.h>
+#include <kaleidoglyph/Plugin.h>
+#include <kaleidoglyph/KeyswitchState.h>
+#include <kaleidoglyph/KeyArray.h>
+#include <kaleidoglyph/KeyswitchEvent.h>
 
 
-namespace kaleidoscope {
+namespace kaleidoglyph {
 namespace qukeys {
 
 
 // Event handler
 bool Plugin::keyswitchEventHook(KeyswitchEvent& event,
-                                kaleidoscope::Plugin*& caller) {
+                                kaleidoglyph::Plugin*& caller) {
   // If this plugin isn't active:
   if (! plugin_active_) {
     if (const Qukey* qp = lookupQukey(event.key))
@@ -218,4 +218,4 @@ void Plugin::flushQueue(int8_t queue_index) {
 }
 
 } // namespace qukeys {
-} // namespace kaleidoscope {
+} // namespace kaleidoglyph {
