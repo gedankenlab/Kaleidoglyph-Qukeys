@@ -11,7 +11,7 @@
 #include <kaleidoglyph/Plugin.h>
 #include <kaleidoglyph/KeyState.h>
 #include <kaleidoglyph/KeyArray.h>
-#include <kaleidoglyph/KeyswitchEvent.h>
+#include <kaleidoglyph/KeyEvent.h>
 
 
 namespace kaleidoglyph {
@@ -19,7 +19,7 @@ namespace qukeys {
 
 
 // Event handler
-bool Plugin::keyswitchEventHook(KeyswitchEvent& event,
+bool Plugin::keyswitchEventHook(KeyEvent& event,
                                 kaleidoglyph::Plugin*& caller) {
   // If this plugin isn't active:
   if (! plugin_active_) {
@@ -69,7 +69,7 @@ bool Plugin::keyswitchEventHook(KeyswitchEvent& event,
       flushQueue(false);
       // send release event for the just-released key
       event.state = cKeyState::released;
-      controller_.handleKeyswitchEvent(event, this);
+      controller_.handleKeyEvent(event, this);
       return true;
     }
   }
@@ -89,12 +89,12 @@ void Plugin::preScanHook(uint16_t current_time) {
   // Next, we check the first key in the queue for delayed release
   int16_t diff_time = key_queue_[0].start_time - current_time;
   if (diff_time > 0 && diff_time < int16_t(grace_period_offset - qukey_release_delay_)) {
-    KeyswitchEvent event;
+    KeyEvent event;
     event.addr  = key_queue_[0].addr;
     event.key   = cKey::clear;
     event.state = cKeyState::released;
     flushQueue(false);
-    controller_.handleKeyswitchEvent(event, this); // send the release event
+    controller_.handleKeyEvent(event, this); // send the release event
   }
 
   // Last, we check keys in the queue for hold timeout
@@ -170,7 +170,7 @@ void Plugin::flushKey(bool alt_key) {
   assert(key_queue_length_ > 0);
   QueueEntry entry = shiftQueue();
   // WARNING: queue_head_p_ doesn't reflect key_queue_[0] here
-  KeyswitchEvent event;
+  KeyEvent event;
   if (queue_head_p_ == nullptr) {
     event.key = keymap_[entry.addr];
   } else if (alt_key) {
@@ -180,7 +180,7 @@ void Plugin::flushKey(bool alt_key) {
   }
   event.addr  = entry.addr;
   event.state = cKeyState::pressed;
-  controller_.handleKeyswitchEvent(event, this);
+  controller_.handleKeyEvent(event, this);
   //shiftQueue();
   queue_head_p_ = lookupQukey(key_queue_[0]);
   // WARNING: qukey_release_delay_ out of sync
