@@ -9,7 +9,7 @@
 #include KALEIDOGLYPH_KEYADDR_H
 #include <kaleidoglyph/Key.h>
 #include <kaleidoglyph/Plugin.h>
-#include <kaleidoglyph/KeyswitchState.h>
+#include <kaleidoglyph/KeyState.h>
 #include <kaleidoglyph/KeyArray.h>
 #include <kaleidoglyph/KeyswitchEvent.h>
 
@@ -68,7 +68,7 @@ bool Plugin::keyswitchEventHook(KeyswitchEvent& event,
     } else {
       flushQueue(false);
       // send release event for the just-released key
-      event.state = cKeyswitchState::released;
+      event.state = cKeyState::released;
       controller_.handleKeyswitchEvent(event, this);
       return true;
     }
@@ -92,7 +92,7 @@ void Plugin::preScanHook(uint16_t current_time) {
     KeyswitchEvent event;
     event.addr  = key_queue_[0].addr;
     event.key   = cKey::clear;
-    event.state = cKeyswitchState::released;
+    event.state = cKeyState::released;
     flushQueue(false);
     controller_.handleKeyswitchEvent(event, this); // send the release event
   }
@@ -179,7 +179,7 @@ void Plugin::flushKey(bool alt_key) {
     event.key = queue_head_p_->primary;
   }
   event.addr  = entry.addr;
-  event.state = cKeyswitchState::pressed;
+  event.state = cKeyState::pressed;
   controller_.handleKeyswitchEvent(event, this);
   //shiftQueue();
   queue_head_p_ = lookupQukey(key_queue_[0]);
