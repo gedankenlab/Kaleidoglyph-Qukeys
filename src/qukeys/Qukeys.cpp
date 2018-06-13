@@ -29,8 +29,11 @@ bool Plugin::keyswitchEventHook(KeyEvent& event,
   }
 
   // If Qukeys has already processed this event:
-  if (checkCaller(caller))
+  if (caller != nullptr) {
+    if (caller == this)
+      caller = nullptr;
     return true;
+  }
 
   // If the key toggled on
   if (event.state.toggledOn()) {
