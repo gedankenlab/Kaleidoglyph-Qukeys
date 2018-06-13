@@ -62,7 +62,7 @@ class Plugin : public kaleidoglyph::Plugin {
     plugin_active_ = !plugin_active_;
   }
 
-  bool keyswitchEventHook(KeyswitchEvent& event,
+  bool keyswitchEventHook(KeyEvent& event,
                           kaleidoglyph::Plugin*& caller) override;
 
   void preScanHook(uint16_t current_time) override;
