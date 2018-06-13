@@ -68,7 +68,7 @@ bool Plugin::keyswitchEventHook(KeyEvent& event,
     } else {
       flushQueue(false);
       // send release event for the just-released key
-      event.state = cKeyState::released;
+      event.state = cKeyState::release;
       controller_.handleKeyEvent(event, this);
       return true;
     }
@@ -92,7 +92,7 @@ void Plugin::preScanHook(uint16_t current_time) {
     KeyEvent event;
     event.addr  = key_queue_[0].addr;
     event.key   = cKey::clear;
-    event.state = cKeyState::released;
+    event.state = cKeyState::release;
     flushQueue(false);
     controller_.handleKeyEvent(event, this); // send the release event
   }
@@ -179,7 +179,7 @@ void Plugin::flushKey(bool alt_key) {
     event.key = queue_head_p_->primary;
   }
   event.addr  = entry.addr;
-  event.state = cKeyState::pressed;
+  event.state = cKeyState::press;
   controller_.handleKeyEvent(event, this);
   //shiftQueue();
   queue_head_p_ = lookupQukey(key_queue_[0]);
