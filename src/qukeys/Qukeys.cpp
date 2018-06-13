@@ -66,10 +66,14 @@ bool Plugin::keyswitchEventHook(KeyEvent& event,
       key_queue_[0].start_time = millis() + grace_period_offset;
       return false;
     } else {
+      // Before we flush the queue, we need to store the Key value for the upcoming
+      // release event (which happens when the current call to handleKeyEvent finishes)
+      if (queue_head_p_ == nullptr) {
+        event.key = keymap_[event.addr];
+      } else {
+        event.key = queue_head_p_->primary;
+      }
       flushQueue(false);
-      // send release event for the just-released key
-      event.state = cKeyState::release;
-      controller_.handleKeyEvent(event, this);
       return true;
     }
   }
