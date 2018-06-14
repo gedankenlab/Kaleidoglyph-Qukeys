@@ -9,6 +9,7 @@
 #include <kaleidoglyph/Keymap.h>
 #include <kaleidoglyph/Controller.h>
 #include <kaleidoglyph/cKey.h>
+#include <kaleidoglyph/EventHandlerResult.h>
 
 #include "qukeys/QukeysKey.h"
 
@@ -62,10 +63,9 @@ class Plugin : public kaleidoglyph::Plugin {
     plugin_active_ = !plugin_active_;
   }
 
-  bool keyswitchEventHook(KeyEvent& event,
-                          kaleidoglyph::Plugin*& caller) override;
+  EventHandlerResult onKeyswitchEvent(KeyEvent& event);
 
-  void preScanHook(uint16_t current_time) override;
+  void beforeKeyswitchScan(uint16_t current_time);
 
  private:
   // An array of Qukey objects

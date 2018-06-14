@@ -19,18 +19,13 @@ namespace qukeys {
 
 
 // Event handler
-bool Plugin::keyswitchEventHook(KeyEvent& event,
-                                kaleidoglyph::Plugin*& caller) {
+EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
   // If this plugin isn't active:
   if (! plugin_active_) {
     if (const Qukey* qp = lookupQukey(event.key))
       event.key = qp->primary;
     return true;
   }
-
-  // If Qukeys has already processed this event:
-  if (checkCaller(caller))
-    return true;
 
   // If the key toggled on
   if (event.state.toggledOn()) {
@@ -81,7 +76,7 @@ bool Plugin::keyswitchEventHook(KeyEvent& event,
 
 
 // Check timeouts and send necessary key events
-void Plugin::preScanHook(uint16_t current_time) {
+void Plugin::beforeKeyswitchScan(uint16_t current_time) {
 
   // If the queue is empty, there's nothing to do:
   if (key_queue_length_ == 0)
