@@ -11,15 +11,24 @@
 #include <kaleidoglyph/cKey.h>
 #include <kaleidoglyph/EventHandlerResult.h>
 
+// -------------------------------------------------------------------------------------
+// To override the constants in `qukeys/constants.h`, copy that file into your sketch's
+// `src/` directory as `qukeys-constants.h`, then add the following line in the sketch's
+// `.kaleidoglyph-builder.conf` file:
+//
+// LOCAL_CFLAGS='-DQUKEYS_CONSTANTS_H=<qukeys-constants.h>'
+//
+#if defined(QUKEYS_CONSTANTS_H)
+#include QUKEYS_CONSTANTS_H
+#else
+#include "qukeys/constants.h"
+#endif
+// -------------------------------------------------------------------------------------
+
 #include "qukeys/QukeysKey.h"
 
 namespace kaleidoglyph {
 namespace qukeys {
-
-// Constants (can be overridden in the sketch)
-extern const uint16_t timeout;
-extern const byte     qukey_release_delay;
-extern const byte     queue_max;
 
 // Qukey structure
 struct Qukey {
