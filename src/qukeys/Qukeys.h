@@ -65,7 +65,7 @@ class Plugin : public kaleidoglyph::Plugin {
 
   EventHandlerResult onKeyswitchEvent(KeyEvent& event);
 
-  void beforeKeyswitchScan(uint16_t current_time);
+  void preKeyswitchScan(uint16_t current_time);
 
  private:
   // An array of Qukey objects

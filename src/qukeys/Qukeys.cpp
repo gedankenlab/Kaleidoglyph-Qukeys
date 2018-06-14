@@ -76,7 +76,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
 
 
 // Check timeouts and send necessary key events
-void Plugin::beforeKeyswitchScan() {
+void Plugin::preKeyswitchScan() {
 
   // If the queue is empty, there's nothing to do:
   if (key_queue_length_ == 0)
