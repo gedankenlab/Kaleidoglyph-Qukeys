@@ -24,7 +24,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
   if (! plugin_active_) {
     if (const Qukey* qp = lookupQukey(event.key))
       event.key = qp->primary;
-    return true;
+    return EventHanderResult::proceed;
   }
 
   // If the key toggled on
@@ -35,9 +35,9 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
     const Qukey* qp = lookupQukey(event.key);
     if (key_queue_length_ > 0 || qp != nullptr) {
       enqueueKey(event.addr, qp);
-      return false;
+      return EventHanderResult::abort;
     } else {
-      return true;
+      return EventHanderResult::proceed;
     }
     
   } else { // event.state.toggledOff()
@@ -47,7 +47,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
 
     // If we didn't find that key in the queue, continue with the next event handler:
     if (queue_index < 0)
-      return true;
+      return EventHanderResult::proceed;
 
     // flush with alternate keycodes up to (but not including) the released key:
     flushQueue(queue_index);
@@ -59,7 +59,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
     // if there's a release delay for that qukey, set the timeout and stop:
     if (qukey_release_delay_ > 0) {
       key_queue_[0].start_time = millis() + grace_period_offset;
-      return false;
+      return EventHanderResult::abort;
     } else {
       // Before we flush the queue, we need to store the Key value for the upcoming
       // release event (which happens when the current call to handleKeyEvent finishes)
@@ -69,7 +69,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
         event.key = queue_head_p_->primary;
       }
       flushQueue(false);
-      return true;
+      return EventHanderResult::proceed;
     }
   }
 }
