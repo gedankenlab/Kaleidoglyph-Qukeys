@@ -17,17 +17,10 @@ namespace kaleidoglyph {
 namespace qukeys {
 
 // Constants (can be overridden in the sketch)
-__attribute__((weak)) extern
-constexpr uint16_t timeout{200};
-
-__attribute__((weak)) extern
-constexpr byte qukey_release_delay{0};
-
-__attribute__((weak)) extern
-constexpr uint16_t grace_period_offset{4096};
-
-__attribute__((weak)) extern
-constexpr byte queue_max{8};
+extern const uint16_t timeout;
+extern const byte     qukey_release_delay;
+extern const uint16_t grace_period_offset;
+extern const byte     queue_max;
 
 // Qukey structure
 struct Qukey {

@@ -17,6 +17,19 @@
 namespace kaleidoglyph {
 namespace qukeys {
 
+// Defaults (can be overridden in the sketch)
+__attribute__((weak))
+constexpr uint16_t timeout{200};
+
+__attribute__((weak))
+constexpr byte qukey_release_delay{0};
+
+__attribute__((weak))
+constexpr uint16_t grace_period_offset{4096};
+
+__attribute__((weak))
+constexpr byte queue_max{8};
+
 
 // Event handler
 EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
