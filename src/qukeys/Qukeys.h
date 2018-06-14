@@ -19,7 +19,6 @@ namespace qukeys {
 // Constants (can be overridden in the sketch)
 extern const uint16_t timeout;
 extern const byte     qukey_release_delay;
-extern const uint16_t grace_period_offset;
 extern const byte     queue_max;
 
 // Qukey structure

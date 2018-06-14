@@ -25,10 +25,10 @@ __attribute__((weak))
 constexpr byte qukey_release_delay{0};
 
 __attribute__((weak))
-constexpr uint16_t grace_period_offset{4096};
-
-__attribute__((weak))
 constexpr byte queue_max{8};
+
+// Internal-only constant(s)
+constexpr uint16_t grace_period_offset{4096};
 
 
 // Event handler
