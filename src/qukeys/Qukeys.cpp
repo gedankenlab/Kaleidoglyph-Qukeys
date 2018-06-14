@@ -76,14 +76,14 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
 
 
 // Check timeouts and send necessary key events
-void Plugin::beforeKeyswitchScan(uint16_t current_time) {
+void Plugin::beforeKeyswitchScan() {
 
   // If the queue is empty, there's nothing to do:
   if (key_queue_length_ == 0)
     return;
 
   // First, we get the current time:
-  //uint16_t current_time = millis();
+  uint16_t current_time = controller_.scanStartTime();
 
   // Next, we check the first key in the queue for delayed release
   int16_t diff_time = key_queue_[0].start_time - current_time;
