@@ -9,6 +9,7 @@
 
 
 namespace kaleidoglyph {
+namespace qukeys {
 
 __attribute__((weak)) extern
 constexpr byte qukeys_type_id { 0b01000000 };
@@ -46,4 +47,5 @@ class QukeysKey {
   }
 };
 
+}
 } // namespace kaleidoglyph {

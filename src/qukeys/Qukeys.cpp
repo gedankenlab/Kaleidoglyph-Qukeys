@@ -22,12 +22,12 @@ constexpr uint16_t grace_period_offset{4096};
 
 
 // Event handler
-EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
+EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
   // If this plugin isn't active:
   if (! plugin_active_) {
     if (const Qukey* qp = lookupQukey(event.key))
       event.key = qp->primary;
-    return EventHanderResult::proceed;
+    return EventHandlerResult::proceed;
   }
 
   // If the key toggled on
@@ -38,9 +38,9 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
     const Qukey* qp = lookupQukey(event.key);
     if (key_queue_length_ > 0 || qp != nullptr) {
       enqueueKey(event.addr, qp);
-      return EventHanderResult::abort;
+      return EventHandlerResult::abort;
     } else {
-      return EventHanderResult::proceed;
+      return EventHandlerResult::proceed;
     }
     
   } else { // event.state.toggledOff()
@@ -50,7 +50,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
 
     // If we didn't find that key in the queue, continue with the next event handler:
     if (queue_index < 0)
-      return EventHanderResult::proceed;
+      return EventHandlerResult::proceed;
 
     // flush with alternate keycodes up to (but not including) the released key:
     flushQueue(queue_index);
@@ -62,7 +62,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
     // if there's a release delay for that qukey, set the timeout and stop:
     if (qukey_release_delay_ > 0) {
       key_queue_[0].start_time = millis() + grace_period_offset;
-      return EventHanderResult::abort;
+      return EventHandlerResult::abort;
     } else {
       // Before we flush the queue, we need to store the Key value for the upcoming
       // release event (which happens when the current call to handleKeyEvent finishes)
@@ -72,7 +72,7 @@ EventHanderResult Plugin::onKeyswitchEvent(KeyEvent& event) {
         event.key = queue_head_p_->primary;
       }
       flushQueue(false);
-      return EventHanderResult::proceed;
+      return EventHandlerResult::proceed;
     }
   }
 }
@@ -96,7 +96,7 @@ void Plugin::preKeyswitchScan() {
     event.key   = cKey::clear;
     event.state = cKeyState::release;
     flushQueue(false);
-    controller_.handleKeyEvent(event, this); // send the release event
+    controller_.handleKeyEvent(event); // send the release event
   }
 
   // Last, we check keys in the queue for hold timeout
@@ -182,11 +182,11 @@ void Plugin::flushKey(bool alt_key) {
   }
   event.addr  = entry.addr;
   event.state = cKeyState::press;
-  controller_.handleKeyEvent(event, this);
+  controller_.handleKeyEvent(event);
   //shiftQueue();
   queue_head_p_ = lookupQukey(key_queue_[0]);
   // WARNING: qukey_release_delay_ out of sync
-  delay(1);
+  delayMicroseconds(100); // TODO: get rid of this delay
 }
 
 inline
