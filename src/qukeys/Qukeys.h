@@ -2,14 +2,13 @@
 
 #include <Arduino.h>
 
-#include KALEIDOGLYPH_HARDWARE_H
-#include KALEIDOGLYPH_KEYADDR_H
-#include <kaleidoglyph/Key.h>
-#include <kaleidoglyph/Plugin.h>
-#include <kaleidoglyph/Keymap.h>
 #include <kaleidoglyph/Controller.h>
-#include <kaleidoglyph/cKey.h>
 #include <kaleidoglyph/EventHandlerResult.h>
+#include <kaleidoglyph/Key.h>
+#include <kaleidoglyph/KeyAddr.h>
+#include <kaleidoglyph/Keymap.h>
+#include <kaleidoglyph/Plugin.h>
+#include <kaleidoglyph/cKey.h>
 
 // -------------------------------------------------------------------------------------
 // To override the constants in `qukeys/constants.h`, copy that file into your sketch's
@@ -17,7 +16,13 @@
 // `.kaleidoglyph-builder.conf` file:
 //
 // LOCAL_CFLAGS='-DQUKEYS_CONSTANTS_H=<qukeys-constants.h>'
+// ...or (e.g.):
+// LOCAL_CFLAGS='-DKALEIDOGLYPH_SKETCH_H=<Model01-Firmware.h>'
 //
+#if defined(KALEIDOGLYPH_SKETCH_H)
+#include KALEIDOGLYPH_SKETCH_H
+#endif
+
 #if defined(QUKEYS_CONSTANTS_H)
 #include QUKEYS_CONSTANTS_H
 #else
@@ -39,6 +44,23 @@ struct Qukey {
   Qukey(Key pri, Key alt, byte delay = qukey_release_delay) : primary(pri),
                                                               alternate(alt),
                                                               release_delay(delay) {}
+};
+
+class PgmQukey {
+ public:
+  Key primary()   const {
+    return Key::getProgmemKey(primary_key_);
+  }
+  Key alternate() const {
+    return Key::getProgmemKey(alternate_key_);
+  }
+  byte release_delay() const {
+    return pgm_read_byte(release_delay_);
+  }
+ private:
+  Key primary_key_;
+  Key alternate_key_;
+  byte release_delay_{qukey_release_delay};
 };
 
 // QueueEntry structure
@@ -78,9 +100,6 @@ class Plugin : public kaleidoglyph::Plugin {
 
   // A reference to the keymap for lookups
   Controller& controller_;
-
-  // A reference to the (shared) array of active key values
-  //KeyArray& active_keys_;
 
   // The queue of keypress events
   QueueEntry key_queue_[queue_max];

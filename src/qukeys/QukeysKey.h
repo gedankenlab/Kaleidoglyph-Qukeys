@@ -3,9 +3,9 @@
 #pragma once
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "kaleidoglyph/Key.h"
-#include <assert.h>
 
 
 namespace kaleidoglyph {
