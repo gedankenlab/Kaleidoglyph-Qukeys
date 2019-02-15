@@ -49,10 +49,10 @@ struct Qukey {
 class PgmQukey {
  public:
   Key primary()   const {
-    return Key::getProgmemKey(primary_key_);
+    return getProgmemKey(primary_key_);
   }
   Key alternate() const {
-    return Key::getProgmemKey(alternate_key_);
+    return getProgmemKey(alternate_key_);
   }
   byte release_delay() const {
     return pgm_read_byte(release_delay_);
