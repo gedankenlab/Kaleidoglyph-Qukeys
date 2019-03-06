@@ -61,7 +61,7 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
 
     // if there's a release delay for that qukey, set the timeout and stop:
     if (qukey_release_delay_ > 0) {
-      key_queue_[0].start_time = millis() + grace_period_offset;
+      key_queue_[0].start_time = Controller::scanStartTime() + grace_period_offset;
       return EventHandlerResult::abort;
     } else {
       // Before we flush the queue, we need to store the Key value for the upcoming
@@ -137,7 +137,7 @@ void Plugin::enqueueKey(KeyAddr k, const Qukey* qp) {
   }
   QueueEntry& queue_tail = key_queue_[key_queue_length_];
   queue_tail.addr       = k;
-  queue_tail.start_time = millis();
+  queue_tail.start_time = Controller::scanStartTime();
   if (key_queue_length_ == 0) {
     queue_head_p_        = qp;
     qukey_release_delay_ = qp->release_delay;
