@@ -42,7 +42,7 @@ class QukeysKey {
                 type_id_ << 8   );
   }
 
-  static bool verify(Key key) {
+  static bool verifyType(Key key) {
     return ((uint16_t(key) >> 8) == qukeys_type_id);
   }
 };
