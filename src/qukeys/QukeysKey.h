@@ -14,7 +14,7 @@
 namespace kaleidoglyph {
 namespace qukeys {
 
-constexpr byte key_type_id{0b000000};
+constexpr byte key_type_id{0b0000000};
 
 }  // namespace qukeys
 }  // namespace kaleidoglyph
