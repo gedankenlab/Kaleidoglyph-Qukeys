@@ -112,7 +112,7 @@ void Plugin::preKeyswitchScan() {
 inline
 const Qukey* Plugin::lookupQukey(Key key) {
   if (QukeysKey::verifyType(key)) {
-    byte qukey_index = QukeysKey(key).index();
+    byte qukey_index = QukeysKey(key).data();
     if (qukey_index < qukey_count_)
       return &qukeys_[qukey_index];
   }
