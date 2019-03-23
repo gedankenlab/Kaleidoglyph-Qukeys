@@ -51,7 +51,7 @@ class Qukey {
     return getProgmemKey(alternate_key_);
   }
   byte releaseDelay() const {
-    return pgm_read_byte(release_delay_);
+    return pgm_read_byte(&release_delay_);
   }
 
  private:
