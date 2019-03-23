@@ -26,7 +26,7 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
   // If this plugin isn't active:
   if (! plugin_active_) {
     if (const Qukey* qp = lookupQukey(event.key))
-      event.key = qp->primary;
+      event.key = qp->primaryKey();
     return EventHandlerResult::proceed;
   }
 
@@ -69,7 +69,7 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
       if (queue_head_p_ == nullptr) {
         event.key = keymap_[event.addr];
       } else {
-        event.key = queue_head_p_->primary;
+        event.key = queue_head_p_->primaryKey();
       }
       flushQueue(false);
       return EventHandlerResult::proceed;
@@ -108,6 +108,11 @@ void Plugin::preKeyswitchScan() {
 }
 
 
+constexpr
+bool isQukeysKey(Key key) {
+  return QukeysKey::verifyType(key);
+}
+
 // returning a pointer is an experiment here; maybe its better to return the index
 inline
 const Qukey* Plugin::lookupQukey(Key key) {
@@ -140,7 +145,7 @@ void Plugin::enqueueKey(KeyAddr k, const Qukey* qp) {
   queue_tail.start_time = Controller::scanStartTime();
   if (key_queue_length_ == 0) {
     queue_head_p_        = qp;
-    qukey_release_delay_ = qp->release_delay;
+    qukey_release_delay_ = qp->releaseDelay();
   }
   ++key_queue_length_;
 }
@@ -176,9 +181,9 @@ void Plugin::flushKey(bool alt_key) {
   if (queue_head_p_ == nullptr) {
     event.key = keymap_[entry.addr];
   } else if (alt_key) {
-    event.key = queue_head_p_->alternate;
+    event.key = queue_head_p_->alternateKey();
   } else {
-    event.key = queue_head_p_->primary;
+    event.key = queue_head_p_->primaryKey();
   }
   event.addr  = entry.addr;
   event.state = cKeyState::press;
@@ -191,7 +196,7 @@ void Plugin::flushKey(bool alt_key) {
 
 inline
 void Plugin::updateReleaseDelay() {
-  qukey_release_delay_ = queue_head_p_ ? queue_head_p_->release_delay : 0;
+  qukey_release_delay_ = queue_head_p_ ? queue_head_p_->releaseDelay() : 0;
 }
 
 // Flush any non-qukeys from the beginning of the queue

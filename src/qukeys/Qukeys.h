@@ -36,31 +36,29 @@ namespace kaleidoglyph {
 namespace qukeys {
 
 // Qukey structure
-struct Qukey {
-  Key  primary;
-  Key  alternate;
-  byte release_delay{qukey_release_delay};
-
-  Qukey(Key pri, Key alt, byte delay = qukey_release_delay) : primary(pri),
-                                                              alternate(alt),
-                                                              release_delay(delay) {}
-};
-
-class PgmQukey {
+class Qukey {
  public:
-  Key primary()   const {
+  constexpr
+  Qukey(Key primary_key, Key alternate_key, byte release_delay = qukey_release_delay)
+      : primary_key_(primary_key),
+        alternate_key_(alternate_key),
+        release_delay_(release_delay) {}
+
+  Key primaryKey() const {
     return getProgmemKey(primary_key_);
   }
-  Key alternate() const {
+  Key alternateKey() const {
     return getProgmemKey(alternate_key_);
   }
-  byte release_delay() const {
+  byte releaseDelay() const {
     return pgm_read_byte(release_delay_);
   }
+
  private:
-  Key primary_key_;
-  Key alternate_key_;
-  byte release_delay_{qukey_release_delay};
+  const Key  primary_key_;
+  const Key  alternate_key_;
+  const byte release_delay_{qukey_release_delay};
+
 };
 
 // QueueEntry structure
