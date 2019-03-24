@@ -71,8 +71,9 @@ struct QueueEntry {
 class Plugin : public kaleidoglyph::Plugin {
 
  public:
-  Plugin(const Qukey* const qukeys, const byte qukey_count, Keymap& keymap, Controller& controller)
-      : qukeys_(qukeys), qukey_count_(qukey_count), keymap_(keymap), controller_(controller) {}
+  template<byte _qukey_count>
+  Plugin(const Qukey (&qukeys)[_qukey_count], Keymap& keymap, Controller& controller)
+      : qukeys_(qukeys), qukey_count_(_qukey_count), keymap_(keymap), controller_(controller) {}
 
   void activate(void) {
     plugin_active_ = true;
