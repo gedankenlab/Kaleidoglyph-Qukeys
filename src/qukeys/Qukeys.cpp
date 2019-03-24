@@ -191,7 +191,7 @@ void Plugin::flushKey(bool alt_key) {
   //shiftQueue();
   queue_head_p_ = lookupQukey(key_queue_[0]);
   // WARNING: qukey_release_delay_ out of sync
-  delayMicroseconds(100); // TODO: get rid of this delay
+  //delayMicroseconds(100); // TODO: get rid of this delay
 }
 
 inline
