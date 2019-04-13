@@ -25,5 +25,10 @@ namespace qukeys {
 
 typedef PluginKey<key_type_id> QukeysKey;
 
+constexpr
+bool isQukeysKey(Key key) {
+  return QukeysKey::verifyType(key);
+}
+
 }  // namespace qukeys
 }  // namespace kaleidoglyph
