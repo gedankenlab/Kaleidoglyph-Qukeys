@@ -39,25 +39,28 @@ namespace qukeys {
 class Qukey {
  public:
   constexpr
-  Qukey(Key primary_key, Key alternate_key, byte release_delay = qukey_release_delay)
-      : primary_key_(primary_key),
-        alternate_key_(alternate_key),
-        release_delay_(release_delay) {}
+  Qukey() = default;
+  constexpr
+  Qukey(const Qukey& other)
+      : primary_key_(other.primary_key_), alternate_key_(other.alternate_key_) {}
+  constexpr
+  Qukey(Key primary_key, Key alternate_key)
+      : primary_key_(primary_key), alternate_key_(alternate_key) {}
 
   Key primaryKey() const {
-    return getProgmemKey(primary_key_);
+    return primary_key_;
   }
   Key alternateKey() const {
-    return getProgmemKey(alternate_key_);
+    return alternate_key_;
   }
-  byte releaseDelay() const {
-    return pgm_read_byte(&release_delay_);
+  bool isSpaceCadet() const {
+    // If the primary `Key` value is a modifier, treat this key as a SpaceCadet key
+    return isModifierKey(primaryKey());
   }
 
  private:
-  const Key  primary_key_;
-  const Key  alternate_key_;
-  const byte release_delay_{qukey_release_delay};
+  Key primary_key_{cKey::clear};
+  Key alternate_key_{cKey::clear};
 
 };
 
@@ -97,27 +100,33 @@ class Plugin : public kaleidoglyph::Plugin {
   // A reference to the keymap for lookups
   Keymap& keymap_;
 
-  // A reference to the keymap for lookups
+  // A reference to the controller for sending delayed keyswitch events
   Controller& controller_;
 
   // The queue of keypress events
   QueueEntry key_queue_[queue_max];
   byte       key_queue_length_{0};
 
-  // Pointer to the qukey at the head of the queue
-  const Qukey* queue_head_p_{nullptr};
+  // The qukey at the head of the queue
+  Qukey queue_head_qukey_;
 
   // Release delay for key at head of queue
   byte qukey_release_delay_{0};
 
+  // Percentage overlap required for subsequent key
+  byte overlap_required_{9};
+
   // Runtime controls
   bool plugin_active_{true};
+
+  bool isQukey(KeyAddr k) const;
+  Qukey getQukey(Key key) const;
 
   const Qukey* lookupQukey(Key key);
   const Qukey* lookupQukey(KeyAddr k);
   const Qukey* lookupQukey(QueueEntry entry);
 
-  void enqueueKey(KeyAddr k, const Qukey* qp = nullptr);
+  void enqueueKey(KeyAddr k);
   int8_t searchQueue(KeyAddr k);
   QueueEntry shiftQueue();
   void flushQueue(bool alt_key);
