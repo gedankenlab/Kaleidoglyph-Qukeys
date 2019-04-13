@@ -72,17 +72,15 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
       uint16_t overlap_time = current_time - key_queue_[1].start_time;
       qukey_release_delay_ = (overlap_time * 10) / overlap_required_;
       return EventHandlerResult::abort;
-    } else {
-      // Before we flush the queue, we need to store the Key value for the upcoming
-      // release event (which happens when the current call to handleKeyEvent finishes)
-      if (isQukey(key_queue_[0].addr)) {
-        event.key = queue_head_qukey_.primaryKey();
-      } else {
-        event.key = keymap_[event.addr];
-      }
+    } else if (key_queue_length_ > 0) {
       flushQueue(false);
-      return EventHandlerResult::proceed;
     }
+
+    // Now correct the event Key value, in case we just flushed a qukey. It
+    // needs to be updated based on whatever the Controller has stored in its
+    // active keys array.
+    event.key = controller_[event.addr];
+    return EventHandlerResult::proceed;
   }
 }
 
@@ -225,8 +223,11 @@ void Plugin::flushKey(bool use_alternate_key) {
 
   controller_.handleKeyEvent(event);
 
-  KeyAddr k = key_queue_[0].addr;
-  queue_head_qukey_ = getQukey(keymap_[k]);
+  // This shouldn't be done unconditionally
+  if (key_queue_length_ > 0) {
+    KeyAddr k = key_queue_[0].addr;
+    queue_head_qukey_ = getQukey(keymap_[k]);
+  }
 }
 
 // Flush any non-qukeys from the beginning of the queue
