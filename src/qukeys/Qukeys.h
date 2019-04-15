@@ -9,6 +9,9 @@
 #include <kaleidoglyph/Keymap.h>
 #include <kaleidoglyph/Plugin.h>
 #include <kaleidoglyph/cKey.h>
+#include <kaleidoglyph/EventHandlerId.h>
+
+// static_assert(EventHandlerId::qukeys, "Missing definition");
 
 // -------------------------------------------------------------------------------------
 // To override the constants in `qukeys/constants.h`, copy that file into your sketch's
@@ -92,6 +95,13 @@ class Plugin : public kaleidoglyph::Plugin {
 
   void preKeyswitchScan();
 
+  void setMinimumOverlap(byte percentage) {
+    overlap_required_ = percentage;
+    if (overlap_required_ >= 100) {
+      overlap_required_ = 0;
+    }
+  }
+
  private:
   // An array of Qukey objects
   const Qukey* const qukeys_;
@@ -114,7 +124,7 @@ class Plugin : public kaleidoglyph::Plugin {
   byte qukey_release_delay_{0};
 
   // Percentage overlap required for subsequent key
-  byte overlap_required_{9};
+  byte overlap_required_{90};
 
   // Runtime controls
   bool plugin_active_{true};

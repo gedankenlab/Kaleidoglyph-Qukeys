@@ -40,48 +40,79 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
       }
     }
 
-    // If the queue is not empty or the pressed key is a qukey, add it to the queue;
-    // otherwise continue to the next event handler
+    // If the queue is not empty or the pressed key is a qukey, add it to the
+    // queue; otherwise continue to the next event handler
     if (key_queue_length_ > 0 || isQukeysKey(event.key)) {
       enqueueKey(event.addr);
       return EventHandlerResult::abort;
-    } else {
-      return EventHandlerResult::proceed;
     }
     
   } else { // event.state.toggledOff()
 
-    // If a key that was in the queue is released, flush the queue up to that key:
+    // If a key that was in the queue is released, flush the queue up to that
+    // key:
     int8_t queue_index = searchQueue(event.addr);
 
-    // If we didn't find that key in the queue, continue with the next event handler:
+    // If we didn't find that key in the queue, continue with the next event
+    // handler:
     if (queue_index < 0)
       return EventHandlerResult::proceed;
 
-    // flush with alternate keycodes up to (but not including) the released key:
+    // If the qukey at the head of the queue is currently delayed, we will need
+    // to send its release event later.
+    KeyEvent delayed_qukey_release;
+    if (qukey_release_delay_ != 0) {
+      delayed_qukey_release.addr = key_queue_[0].addr;
+      delayed_qukey_release.state = cKeyState::release;
+      delayed_qukey_release.caller = EventHandlerId::qukeys;
+    }
+
+    // Flush with alternate keycodes up to (but not including) the released key:
     flushQueue(queue_index);
 
-    // If the released key was a SpaceCadet key, flush it now
-    if (queue_head_qukey_.isSpaceCadet()) {
-      flushQueue(true);
+    // At this point, the released key is now at the head of the queue. We check
+    // to see if it's a qukey:
+    if (isQukeysKey(keymap_[event.addr])) {
+
+      if (queue_head_qukey_.isSpaceCadet() && key_queue_length_ == 1) {
+        // If it's a SpaceCadet key, it should get flushed immediately. Its
+        // value depends on whether or not any subsequent keys were pressed
+        // after it.
+        flushKey(true);
+
+      } else if (overlap_required_ != 0 && key_queue_length_ > 1) {
+        // If there's a release delay in effect, and there's more than this one
+        // key in the queue, we need to abort now. The timeout(s) will be
+        // handled in the other hook. Otherwise, flush the current key with its
+        // primary value.
+        uint16_t current_time = Controller::scanStartTime();
+        uint16_t overlap_time = current_time - key_queue_[1].start_time;
+        uint32_t release_timeout = (overlap_time * 100) / overlap_required_;
+        qukey_release_delay_ = (release_timeout < 256) ? release_timeout : 255;
+        // qukey_release_delay_ = (overlap_time * 100) / overlap_required_;
+        return EventHandlerResult::abort;
+
+      } else {
+        // Otherwise, flush the qukey with its primary value.
+        flushKey(false);
+      }
     }
 
-    // if there's a release delay for that qukey, set the timeout and stop:
-    if (key_queue_length_ > 1 && overlap_required_ < 10) {
-      uint16_t current_time = Controller::scanStartTime();
-      uint16_t overlap_time = current_time - key_queue_[1].start_time;
-      qukey_release_delay_ = (overlap_time * 10) / overlap_required_;
-      return EventHandlerResult::abort;
-    } else if (key_queue_length_ > 0) {
-      flushQueue(false);
+    // Now we can flush the remaining head of the queue of any non-qukeys:
+    flushQueue();
+
+    // Next, if there was a delayed qukey release, send its release event:
+    if (delayed_qukey_release.addr.isValid()) {
+      controller_.handleKeyEvent(delayed_qukey_release);
     }
 
-    // Now correct the event Key value, in case we just flushed a qukey. It
-    // needs to be updated based on whatever the Controller has stored in its
-    // active keys array.
+    // Finally, we need to allow the current release event to proceed. But
+    // first, we must correct the key value from what's in the controller's
+    // active keys array:
     event.key = controller_[event.addr];
-    return EventHandlerResult::proceed;
   }
+
+  return EventHandlerResult::proceed;
 }
 
 
@@ -102,27 +133,25 @@ void Plugin::preKeyswitchScan() {
       // prepare release event
       KeyEvent event;
       event.addr  = key_queue_[0].addr;
-      event.key   = cKey::clear;
       event.state = cKeyState::release;
-      // release qukey primary
+      event.caller = EventHandlerId::qukeys;
+      // press qukey primary
       flushQueue(false);
       // send the release event
       controller_.handleKeyEvent(event);
     }
-  }
-
-  // Last, we check keys in the queue for hold timeout
-  if (key_queue_length_ > 0 &&
-      (current_time - key_queue_[0].start_time) > timeout) {
-    if (queue_head_qukey_.isSpaceCadet()) {
-      // release qukey primary
-      flushQueue(false);
-    } else {
-      // release qukey alternate
-      flushQueue(true);
+  } else {
+    // If there was no delayed release, we check to see if the qukey at the head
+    // of the queue has timed out.
+    uint16_t elapsed_time = current_time - key_queue_[0].start_time;
+    if (elapsed_time > timeout) {
+      if (queue_head_qukey_.isSpaceCadet()) {
+        flushQueue(false);  // primary
+      } else {
+        flushQueue(true);  // alternate
+      }
     }
   }
-
 }
 
 
@@ -211,29 +240,35 @@ void Plugin::flushKey(bool use_alternate_key) {
   KeyEvent event;
   event.addr  = entry.addr;
   event.state = cKeyState::press;
+  event.caller = EventHandlerId::qukeys;
+  event.key = keymap_[entry.addr];
 
-  Key key = keymap_[entry.addr];
-  if (!isQukeysKey(key)) {
-    event.key = key;
-  } else if (use_alternate_key) {
-    event.key = queue_head_qukey_.alternateKey();
-  } else {
-    event.key = queue_head_qukey_.primaryKey();
+  if (isQukeysKey(event.key)) {
+    if (use_alternate_key) {
+      event.key = queue_head_qukey_.alternateKey();
+    } else {
+      event.key = queue_head_qukey_.primaryKey();
+    }
   }
 
+  // Send the keypress event for the flushed key:
   controller_.handleKeyEvent(event);
 
-  // This shouldn't be done unconditionally
+  // If the queue isn't empty, cache the next entry's Qukey value (if it is a
+  // qukey):
   if (key_queue_length_ > 0) {
     KeyAddr k = key_queue_[0].addr;
     queue_head_qukey_ = getQukey(keymap_[k]);
   }
+
+  // Clear any release delay that had been set
+  qukey_release_delay_ = 0;
 }
 
 // Flush any non-qukeys from the beginning of the queue
 inline
 void Plugin::flushQueue() {
-  while (key_queue_length_ > 0 && isQukeysKey(keymap_[key_queue_[0].addr])) {
+  while (key_queue_length_ > 0 && !isQukeysKey(keymap_[key_queue_[0].addr])) {
     flushKey();
   }
 }
