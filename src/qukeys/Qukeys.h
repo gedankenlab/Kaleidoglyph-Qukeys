@@ -10,6 +10,7 @@
 #include <kaleidoglyph/Plugin.h>
 #include <kaleidoglyph/cKey.h>
 #include <kaleidoglyph/EventHandlerId.h>
+#include "qukeys/EventQueue.h"
 
 // static_assert(EventHandlerId::qukeys, "Missing definition");
 
@@ -58,19 +59,13 @@ class Qukey {
   }
   bool isSpaceCadet() const {
     // If the primary `Key` value is a modifier, treat this key as a SpaceCadet key
-    return isModifierKey(primaryKey());
+    return (isModifierKey(primary_key_) || isLayerShiftKey(primary_key_));
   }
 
  private:
   Key primary_key_{cKey::clear};
   Key alternate_key_{cKey::clear};
 
-};
-
-// QueueEntry structure
-struct QueueEntry {
-  KeyAddr  addr;
-  uint16_t start_time;
 };
 
 
@@ -90,17 +85,16 @@ class Plugin : public kaleidoglyph::Plugin {
   void toggle(void) {
     plugin_active_ = !plugin_active_;
   }
-
-  EventHandlerResult onKeyswitchEvent(KeyEvent& event);
-
-  void preKeyswitchScan();
-
   void setMinimumOverlap(byte percentage) {
     overlap_required_ = percentage;
     if (overlap_required_ >= 100) {
       overlap_required_ = 0;
     }
   }
+
+  EventHandlerResult onKeyswitchEvent(KeyEvent& event);
+
+  void preKeyswitchScan();
 
  private:
   // An array of Qukey objects
@@ -113,38 +107,20 @@ class Plugin : public kaleidoglyph::Plugin {
   // A reference to the controller for sending delayed keyswitch events
   Controller& controller_;
 
-  // The queue of keypress events
-  QueueEntry key_queue_[queue_max];
-  byte       key_queue_length_{0};
+  // The queue of keyswitch events
+  EventQueue<queue_max> event_queue_;
 
-  // The qukey at the head of the queue
-  Qukey queue_head_qukey_;
-
-  // Release delay for key at head of queue
-  byte qukey_release_delay_{0};
-
-  // Percentage overlap required for subsequent key
-  byte overlap_required_{90};
+  // Percentage overlap of subsequent key's press to cause qukey to take on
+  // alternate value
+  byte overlap_required_{99};
 
   // Runtime controls
   bool plugin_active_{true};
 
-  bool isQukey(KeyAddr k) const;
+  void processQueue();
+  bool updateFlushEvent(KeyEvent& queued_event);
+  bool releaseDelayed(uint16_t overlap_start, uint16_t overlap_end) const;
   Qukey getQukey(Key key) const;
-
-  const Qukey* lookupQukey(Key key);
-  const Qukey* lookupQukey(KeyAddr k);
-  const Qukey* lookupQukey(QueueEntry entry);
-
-  void enqueueKey(KeyAddr k);
-  int8_t searchQueue(KeyAddr k);
-  QueueEntry shiftQueue();
-  void flushQueue(bool alt_key);
-  void flushQueue(int8_t queue_index);
-  void flushKey(bool alt_key = false);
-  void flushQueue();
-  void updateReleaseDelay();
-  
 };
 
 } // namespace qukeys {
