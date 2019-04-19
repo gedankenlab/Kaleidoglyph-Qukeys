@@ -24,10 +24,11 @@ EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
   // queue and abort; the processing of the queue now happens in the pre-scan
   // hook instead. I tried including tests here for events that could bypass the
   // event queue, but it increases the size of the binary by more than seems
-  // worthwhile (66 bytes). Similarly, I had included a call to `processQueue()`
-  // after the event gets queued, but that happens in the pre-scan hook anyway,
-  // so it saves another 6 bytes of PROGMEM.
+  // worthwhile (66 bytes).
   event_queue_.append(event);
+  // This seemingly-unnecessary call guarantees that the queue can't overflow,
+  // even if we get multiple events in a single scan cycle.
+  processQueue();
   return EventHandlerResult::abort;
 }
 
