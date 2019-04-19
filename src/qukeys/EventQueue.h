@@ -15,6 +15,8 @@ template <byte _max_length,
           typename _Bitfield  = byte,
           typename _Timestamp = uint16_t>
 class EventQueue {
+  static_assert(_max_length <= (sizeof(_Bitfield) * 8),
+                "_Bitfield type too small for _max_length!");
  public:
   byte length() const { return length_; }
   bool isEmpty() const { return (length_ == 0); }
