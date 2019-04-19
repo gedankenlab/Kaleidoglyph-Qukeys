@@ -57,7 +57,7 @@ void Plugin::preKeyswitchScan() {
   Qukey qukey = getQukey(keymap_[event.addr]);
   event.key = qukey.isSpaceCadet() ? qukey.primaryKey() : qukey.alternateKey();
   event.caller = EventHandlerId::qukeys;
-  event_queue_.remove(0);
+  event_queue_.shift();
   controller_.handleKeyEvent(event);
 }
 
@@ -89,14 +89,14 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
 
   // If the first event in the queue is a release, flush it immediately.
   if (queued_event.state.toggledOff()) {
-    event_queue_.remove(0);
+    event_queue_.shift();
     return true;
   }
   // The first event in the queue is a press, so look up its value in the
   // keymap. If it's not a QukeysKey, we can flush it now.
   queued_event.key = keymap_[queued_event.addr];
   if (!isQukeysKey(queued_event.key)) {
-    event_queue_.remove(0);
+    event_queue_.shift();
     return true;
   }
 
@@ -110,7 +110,7 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
   // then flush it from the queue.
   if (! plugin_active_) {
     queued_event.key = qukey.primaryKey();
-    event_queue_.remove(0);
+    event_queue_.shift();
     return true;
   }
 
@@ -130,7 +130,7 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
     if (event_queue_.isPress(i)) {
       if (qukey_is_spacecadet) {
         queued_event.key = qukey.primaryKey();
-        event_queue_.remove(0);
+        event_queue_.shift();
         return true;
       }
       if (next_keypress_index == 0) {
@@ -146,7 +146,7 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
         // there were no keypresses between the qukey press and its release, or
         // there's no release delay overlap configured.
         queued_event.key = qukey_is_spacecadet ? qukey.alternateKey() : qukey.primaryKey();
-        event_queue_.remove(0);
+        event_queue_.shift();
         return true;
       }
       // calculate release delay and check to see if it has timed out
@@ -156,7 +156,7 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
         continue;
       }
       queued_event.key = qukey.primaryKey();
-      event_queue_.remove(0);
+      event_queue_.shift();
       return true; 
     }
 
@@ -166,26 +166,19 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
         // event_queue_[i] is a release of a key that was pressed subsequent
         // to the qukey
         queued_event.key = qukey.alternateKey();
-        event_queue_.remove(0);
+        event_queue_.shift();
         return true;
       }
     }
 
     // A key was released that is not in the queue. If it's not a modifier key
-    // (including layer shifts), we send the release event out of order. Without
-    // this block of code, the binary is 30 bytes smaller, but there's a chance
-    // of delaying a release long enough that it repeats, despite the user
-    // having tapped the key. Also, the queue is more likely to overflow,
-    // requiring a premature release of a qukey.
-    KeyAddr k = event_queue_.addr(i);
-    Key key = controller_[k];
-    if (! (isModifierKey(key) || isLayerShiftKey(key))) {
-      queued_event.addr = k;
-      queued_event.key = key;
-      queued_event.state = cKeyState::release;
-      event_queue_.remove(i);
-      return true;
-    }
+    // (including layer shifts), we could send the release event out of
+    // order. Without doing so, it is possible to get a tapped non-modifier to
+    // repeat because of rollover to a qukey that is held. It also reduces the
+    // probability of filling up the event queue (and thus prematurely flushing
+    // a qukey in its primary state). However, doing so complicates the code,
+    // increases PROGMEM usage by 82 bytes, and weakens the guarantee we can
+    // make about preserving keyswitch event order.
   }
 
   // The queue must always have space for the next event to be added, so if it's
@@ -194,7 +187,7 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
   // the keys.
   if (event_queue_.isFull()) {
     queued_event.key = qukey.primaryKey();
-    event_queue_.remove(0);
+    event_queue_.shift();
     return true;
   }
 
