@@ -32,6 +32,19 @@ class EventQueue {
       addrs_[i]      = addrs_[i + 1];
       timestamps_[i] = timestamps_[i + 1];
     }
+    static constexpr _Bitfield all = -1;
+    _Bitfield tail_mask = all << index;
+    _Bitfield head_mask = ~tail_mask;
+    _Bitfield tail = (release_event_bits_ >> 1) & tail_mask;
+    _Bitfield head = release_event_bits_ & head_mask;
+    release_event_bits_ = tail | head;
+  }
+  void shift() {
+    --length_;
+    for (byte i{0}; i < length_; ++i) {
+      addrs_[i]      = addrs_[i + 1];
+      timestamps_[i] = timestamps_[i + 1];
+    }
     release_event_bits_ >>= 1;
   }
 
