@@ -20,30 +20,38 @@ namespace qukeys {
 
 // Event handler
 EventHandlerResult Plugin::onKeyswitchEvent(KeyEvent& event) {
-  // if (event_queue_.isEmpty()) {
-  //   if (isQukeysKey(event.key)) {
-  //     event_queue_.append(event);
-  //     return EventHandlerResult::abort;
-  //   }
-  //   return EventHandlerResult::proceed;
-  // }
+  // This function is a bit misleading. All it does is add the event to the
+  // queue and abort; the processing of the queue now happens in the pre-scan
+  // hook instead. I tried including tests here for events that could bypass the
+  // event queue, but it increases the size of the binary by more than seems
+  // worthwhile (66 bytes). Similarly, I had included a call to `processQueue()`
+  // after the event gets queued, but that happens in the pre-scan hook anyway,
+  // so it saves another 6 bytes of PROGMEM.
   event_queue_.append(event);
-  processQueue();
   return EventHandlerResult::abort;
 }
 
+// Run once each scan cycle
 void Plugin::preKeyswitchScan() {
+  // First, flush any events that we can from the queue.
   processQueue();
 
+  // After that, if there's nothing left in the queue, we're done.
   if (event_queue_.isEmpty()) {
     return;
   }
 
+  // Last, check to see if the qukey at the head of the queue has timed out.
   uint16_t current_time = Controller::scanStartTime();
   uint16_t elapsed_time = current_time - event_queue_.timestamp(0);
   if (elapsed_time < timeout) {
     return;
   }
+
+  // The qukey has timed out, so we set the key value depending on which type of
+  // qukey it is. For SpaceCadet keys, the modifier is the primary value, but
+  // others use the alternate (which isn't necessarily a modifier, but will be
+  // in most normal use cases).
   KeyEvent event = event_queue_.head();
   Qukey qukey = getQukey(keymap_[event.addr]);
   event.key = qukey.isSpaceCadet() ? qukey.primaryKey() : qukey.alternateKey();
@@ -52,6 +60,11 @@ void Plugin::preKeyswitchScan() {
   controller_.handleKeyEvent(event);
 }
 
+// This function flushes any events that are ready from the queue. In most
+// cases, that means the qukey at the head of the queue (if its state can be
+// determined), and any subsequent events up to the next qukey. After it runs,
+// the head of the queue is guaranteed to be a qukey press whose state is still
+// indeterminite.
 void Plugin::processQueue() {
   KeyEvent event;
   while (updateFlushEvent(event)) {
@@ -60,6 +73,13 @@ void Plugin::processQueue() {
   }
 }
 
+// This is the core function. It determines from the queue of events whether or
+// not the qukey's state can be determined. If it can, it updates `queued_event`
+// accordingly and returns `true`. If we still need to wait on either a timeout
+// or another input event (probably a key release), it returns `false`,
+// signalling `processQueue()` to stop. It is also possible for non-modifier
+// release events without matching press events in the queue to be flushed out
+// of order.
 bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
   if (event_queue_.isEmpty()) {
     return false;
