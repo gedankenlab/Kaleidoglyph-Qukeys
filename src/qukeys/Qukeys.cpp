@@ -151,7 +151,11 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
     }
 
     // A key was released that is not in the queue. If it's not a modifier key
-    // (including layer shifts), we send the release event out of order:
+    // (including layer shifts), we send the release event out of order. Without
+    // this block of code, the binary is 30 bytes smaller, but there's a chance
+    // of delaying a release long enough that it repeats, despite the user
+    // having tapped the key. Also, the queue is more likely to overflow,
+    // requiring a premature release of a qukey.
     KeyAddr k = event_queue_.addr(i);
     Key key = controller_[k];
     if (! (isModifierKey(key) || isLayerShiftKey(key))) {
