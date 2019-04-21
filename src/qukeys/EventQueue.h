@@ -49,6 +49,10 @@ class EventQueue {
     }
     release_event_bits_ >>= 1;
   }
+  void clear() {
+    length_ = 0;
+    release_event_bits_ = 0;
+  }
 
   KeyAddr addr(byte index) const { return addrs_[index]; }
 
