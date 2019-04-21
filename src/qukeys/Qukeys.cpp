@@ -89,9 +89,16 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
 
   // If the first event in the queue is a release, flush it immediately.
   if (queued_event.state.toggledOff()) {
+    // Check to see if we're waiting on a potential tap-hold event.
+    if (waitingForTapHold()) {
+      return false;
+    }
+    // If not, clear it, and proceed with sending the release event.
+    release_delayed_for_tap_hold_ = false;
     event_queue_.shift();
     return true;
   }
+
   // The first event in the queue is a press, so look up its value in the
   // keymap. If it's not a QukeysKey, we can flush it now.
   queued_event.key = keymap_[queued_event.addr];
@@ -143,6 +150,13 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
     // If this is a release of the qukey
     if (event_queue_.addr(i) == queued_event.addr) {
       if (next_keypress_index == 0 || overlap_required_ == 0) {
+        if (event_queue_.length() == 2) {
+          // The only events in the queue are the press and release of this
+          // qukey. We need to flush and send the press event, but first, we
+          // record that the release should be delayed in case we get a tap-hold
+          // sequence.
+          release_delayed_for_tap_hold_ = true;
+        }
         // there were no keypresses between the qukey press and its release, or
         // there's no release delay overlap configured.
         queued_event.key = qukey_is_spacecadet ? qukey.alternateKey() : qukey.primaryKey();
@@ -203,6 +217,73 @@ bool Plugin::releaseDelayed(uint16_t overlap_start, uint16_t overlap_end) const 
   uint16_t elapsed_time = current_time - overlap_start;
   return (elapsed_time < release_timeout);
 }
+
+
+// Return false to signal that the release event at the head of the queue should
+// proceed, and true if it should be delayed until the state of the potential
+// tap-hold composite event has been determined.
+bool Plugin::waitingForTapHold() {
+  // This must only be called if the event queue has already been determined to
+  // be not empty, and the first event is the release of a qukey.
+  assert(event_queue_.length > 0);
+  assert(event_queue_.isRelease(0));
+
+  // If there's not potential tap-hold waiting for a timeout, proceed.
+  if (! release_delayed_for_tap_hold_) {
+    return false;
+  }
+
+  // These helper variables are here to improve code clarity. It's possible that
+  // the binary would be different if I only declared them when necessary; I
+  // should check.
+  uint16_t current_time = Controller::scanStartTime();
+  uint16_t elapsed_time;
+
+  // If there's only one event in the queue (the qukey release event), we only
+  // need to check to see if it has timed out.
+  if (event_queue_.length() == 1) {
+    elapsed_time = current_time - event_queue_.timestamp(0);
+    if (elapsed_time > tap_hold_timeout) {
+      // The release event has timed out.
+      return false;
+    }
+    // If it hasn't timed out yet, we're done.
+    return true;
+  }
+
+  // If there are any events in the queue from keys other than the qukey, give
+  // up; it gets needlessly complicated if we try to support rollover.
+  for (byte i{1}; i < event_queue_.length(); ++i) {
+    if (event_queue_.addr(i) != event_queue_.addr(0)) {
+      return false;
+    }
+  }
+
+  // The queue is a series of alternating release and press events, all on the
+  // same key, starting with the first release. What we do next only depends on
+  // the number of events in the queue.
+  if (event_queue_.length() == 2) {
+    // Just one release and the second press. Check to see if it has timed out.
+    elapsed_time = current_time - event_queue_.timestamp(1);
+    if (elapsed_time > tap_hold_timeout) {
+      // This is a tap-hold composite event; to turn it into a single press &
+      // hold in the output, we just need to remove the first two events from
+      // the queue.
+      event_queue_.clear();
+      release_delayed_for_tap_hold_ = false;
+      // There's nothing left in the queue, and we're not technically waiting to
+      // decide on a tap-hold, but we need to return true here anyway as a
+      // signal that processing of the queue should stop because it's empty.
+      return true;
+    }
+  }
+
+  // If we get here, there are three (or possibly more) events in the queue, so
+  // the qukey has been tapped twice.
+  release_delayed_for_tap_hold_ = false;
+  return false;
+}
+
 
 // return the Qukey object corresponding to the QukeysKey
 Qukey Plugin::getQukey(Key key) const {
