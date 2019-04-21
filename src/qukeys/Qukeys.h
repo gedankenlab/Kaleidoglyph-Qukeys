@@ -62,10 +62,10 @@ class Qukey {
     return (isModifierKey(primary_key_) || isLayerShiftKey(primary_key_));
   }
   Key tapKey() const {
-    return isSpaceCadet() ? primaryKey() : alternateKey();
+    return isSpaceCadet() ? alternateKey() : primaryKey();
   }
   Key holdKey() const {
-    return isSpaceCadet() ? alternateKey() : primaryKey();
+    return isSpaceCadet() ? primaryKey() : alternateKey();
   }
 
  private:
