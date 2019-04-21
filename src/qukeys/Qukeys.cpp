@@ -38,7 +38,7 @@ void Plugin::preKeyswitchScan() {
   processQueue();
 
   // After that, if there's nothing left in the queue, we're done.
-  if (event_queue_.isEmpty()) {
+  if (event_queue_.isEmpty() || release_delayed_for_tap_hold_) {
     return;
   }
 
@@ -274,13 +274,12 @@ bool Plugin::waitingForTapHold() {
       // There's nothing left in the queue, and we're not technically waiting to
       // decide on a tap-hold, but we need to return true here anyway as a
       // signal that processing of the queue should stop because it's empty.
-      return true;
     }
+    return true;
   }
 
   // If we get here, there are three (or possibly more) events in the queue, so
   // the qukey has been tapped twice.
-  release_delayed_for_tap_hold_ = false;
   return false;
 }
 
