@@ -16,7 +16,7 @@ constexpr byte queue_max{8};
 // external pointing devices. This timeout value does not affect how long it takes for a
 // qukey to be flushed when typing normally, because a key release will cause it to be
 // flushed before the timeout expires.
-constexpr uint16_t timeout{200};
+constexpr uint16_t hold_timeout{200};
 
 } // namespace qukeys {
 } // namespace kaleidoglyph {

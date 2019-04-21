@@ -45,7 +45,7 @@ void Plugin::preKeyswitchScan() {
   // Last, check to see if the qukey at the head of the queue has timed out.
   uint16_t current_time = Controller::scanStartTime();
   uint16_t elapsed_time = current_time - event_queue_.timestamp(0);
-  if (elapsed_time < timeout) {
+  if (elapsed_time < hold_timeout) {
     return;
   }
 
