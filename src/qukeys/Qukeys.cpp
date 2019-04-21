@@ -55,7 +55,7 @@ void Plugin::preKeyswitchScan() {
   // in most normal use cases).
   KeyEvent event = event_queue_.head();
   Qukey qukey = getQukey(keymap_[event.addr]);
-  event.key = qukey.isSpaceCadet() ? qukey.primaryKey() : qukey.alternateKey();
+  event.key = qukey.holdKey();
   event.caller = EventHandlerId::qukeys;
   event_queue_.shift();
   controller_.handleKeyEvent(event);

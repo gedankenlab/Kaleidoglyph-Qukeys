@@ -61,6 +61,12 @@ class Qukey {
     // If the primary `Key` value is a modifier, treat this key as a SpaceCadet key
     return (isModifierKey(primary_key_) || isLayerShiftKey(primary_key_));
   }
+  Key tapKey() const {
+    return isSpaceCadet() ? primaryKey() : alternateKey();
+  }
+  Key holdKey() const {
+    return isSpaceCadet() ? alternateKey() : primaryKey();
+  }
 
  private:
   Key primary_key_{cKey::clear};
