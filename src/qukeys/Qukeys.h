@@ -120,12 +120,16 @@ class Plugin : public kaleidoglyph::Plugin {
   // alternate value
   byte overlap_required_{99};
 
+  // If a tap-hold sequence hasn't been cancelled or timed out yet
+  bool release_delayed_for_tap_hold_{false};
+
   // Runtime controls
   bool plugin_active_{true};
 
   void processQueue();
   bool updateFlushEvent(KeyEvent& queued_event);
   bool releaseDelayed(uint16_t overlap_start, uint16_t overlap_end) const;
+  bool waitingForTapHold();
   Qukey getQukey(Key key) const;
 };
 
