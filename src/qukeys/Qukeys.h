@@ -75,7 +75,7 @@ class Qukey {
 };
 
 
-class Plugin : public kaleidoglyph::Plugin {
+class Plugin : public EventHandler {
 
  public:
   template<byte _qukey_count>
