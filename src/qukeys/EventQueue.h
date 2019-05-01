@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+#pragma once
+
 #include <Arduino.h>
 
 #include <kaleidoglyph/Controller.h>
