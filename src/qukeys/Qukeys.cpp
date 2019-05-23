@@ -212,9 +212,10 @@ bool Plugin::updateFlushEvent(KeyEvent& queued_event) {
 bool Plugin::releaseDelayed(uint16_t overlap_start, uint16_t overlap_end) const {
   uint16_t overlap_duration = overlap_end - overlap_start;
   uint32_t limit = (overlap_duration * 100) / overlap_required_;
-  byte release_timeout = (limit < 256) ? limit : 255;
+  limit -= overlap_duration;
+  uint8_t  release_timeout = (limit < 256) ? limit : 255;
   uint16_t current_time = Controller::scanStartTime();
-  uint16_t elapsed_time = current_time - overlap_start;
+  uint16_t elapsed_time = current_time - overlap_end;
   return (elapsed_time < release_timeout);
 }
 
